@@ -58,15 +58,11 @@ def start_screen(colortext='black'):
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.pos[0] >= intro_rect.x and event.pos[1] >= intro_rect.y:
-                    if event.pos[0] <= intro_rect.width + intro_rect.x:
-                        if event.pos[1] <= intro_rect.height + intro_rect.y:
-                            menu()
-                            break
+                if intro_rect.collidepoint(event.pos):
+                    menu()
+                    break
             elif event.type == pygame.MOUSEMOTION:
-                if event.pos[0] >= intro_rect.x and event.pos[1] >= intro_rect.y and \
-                        event.pos[0] <= intro_rect.width + intro_rect.x and \
-                        event.pos[1] <= intro_rect.height + intro_rect.y:
+                if intro_rect.collidepoint(event.pos):
                     highlighting = True
                 else:
                     highlighting = False
