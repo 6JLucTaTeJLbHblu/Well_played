@@ -1,76 +1,8 @@
-import os
-import sys
-import pygame
+from classes import *
+from load_level import *
 import time
 
 pygame.init()
-
-
-def load_image(name, colorkey=None):
-    fullname = os.path.join('data', name)
-    if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
-        sys.exit()
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        try:
-            image = image.convert()
-        except pygame.error:
-            pass
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        try:
-            image = image.convert_alpha()
-        except pygame.error:
-            pass
-    return image
-
-
-FPS = 60
-tile_images = {
-    'wall': load_image('wall.png'),
-    'empty': load_image('object.png'),
-    'door': load_image('zakrataya_dver_szhataya.png'),
-    'opendoor': load_image('otkrytaya_dver_szhataya.png'),
-    'button': load_image('knopka_fon_szhataya.png'),
-    'pressedbutton': load_image('knopka_nazhataya_fon_szhataya.png'),
-    'restart': load_image('restart_szhaty.png'),
-    'pause': load_image('pauza_szhaty.png'),
-    'left': load_image('strelka_vlevo_szhataya.png'),
-    'down': load_image('strelka_vniz_szhataya.png'),
-    'right': load_image('strelka_vpravo_szhataya.png'),
-    'up': load_image('strelka_vverkh_szhataya.png')}
-letter_and_number_images = {'а': load_image('а.png'), 'б': load_image('б.png'), 'в': load_image('в.png'),
-                            'г': load_image('г.png'), 'д': load_image('д.png'), 'е': load_image('е.png'),
-                            'ё': load_image('ё.png'), 'ж': load_image('ж.png'), 'з': load_image('з.png'),
-                            'и': load_image('и.png'), 'й': load_image('й.png'), 'к': load_image('к.png'),
-                            'л': load_image('л.png'), 'м': load_image('м.png'), 'н': load_image('н.png'),
-                            'о': load_image('о.png'), 'п': load_image('п.png'), 'р': load_image('р.png'),
-                            'с': load_image('с.png'), 'т': load_image('т.png'), 'у': load_image('у.png'),
-                            'ф': load_image('ф.png'), 'х': load_image('х.png'), 'ц': load_image('ц.png'),
-                            'ш': load_image('ш.png'), 'щ': load_image('щ.png'), 'ъ': load_image('ъ.png'),
-                            'ы': load_image('ы.png'), 'ь': load_image('ь.png'), 'э': load_image('э.png'),
-                            'ю': load_image('ю.png'), 'я': load_image('я.png'), 'ч': load_image('ч.png'),
-                            '1': load_image('1.png'), '2': load_image('2.png'), '3': load_image('3.png'),
-                            '4': load_image('4.png'), '5': load_image('5.png'), '6': load_image('6.png'),
-                            '7': load_image('7.png'), '8': load_image('8.png'), '9': load_image('9.png')}
-level_number_images = {1: load_image('1.png'), 2: load_image('2.png'), 3: load_image('3.png'),
-                       4: load_image('4.png'), 5: load_image('5.png'), 6: load_image('6.png'),
-                       7: load_image('7.png'), 8: load_image('8.png'), 9: load_image('9.png'),
-                       10: load_image('10.png'), 'vopros': load_image('vopros.png')}
-KAMEHb = {'level5': load_image('Скала.jpg')}
-letter_dict = {}
-player_image_jump = pygame.transform.scale(load_image('chelik_prygaet_szhaty.png', 'white'), (36, 80))
-player_image_jump1 = pygame.transform.scale(load_image('chelik_prygaet_szhaty.png', 'white'), (36, 80))
-player_image_jump_back = pygame.transform.flip(player_image_jump, True, False)
-player_image = pygame.transform.scale(load_image('chelik_stoit_szhaty.png', 'white'), (36, 90))
-player_image1 = pygame.transform.scale(load_image('chelik_stoit_szhaty.png', 'white'), (36, 90))
-player_image_back = pygame.transform.flip(player_image1, True, False)
-player_image_run = pygame.transform.scale(load_image('chelik_idyot_szhaty.png', 'white'), (36, 90))
-player_image_back_run = pygame.transform.flip(player_image_run, True, False)
-tile_width = tile_height = 50
 all_sprites = pygame.sprite.Group()
 tiles_wall_group = pygame.sprite.Group()
 tiles_floor_group = pygame.sprite.Group()
@@ -87,9 +19,11 @@ scala_group = pygame.sprite.Group()
 restart_group = pygame.sprite.Group()
 pause_group = pygame.sprite.Group()
 level_number_group = pygame.sprite.Group()
-arrow_group = pygame.sprite.Group()
+letter_dict = {}
 maxlevel = int(open("data/openedlevels.txt", encoding="utf-8").readline())
 levelnum = 0
+levels = [load_level('Start.txt'), load_level('level_1.txt'), load_level('level_2.txt'), load_level('level_3.txt'),
+          load_level('level_4.txt'), load_level('level_5.txt'), load_level('level_6.txt')]
 
 
 def terminate():
@@ -149,162 +83,6 @@ def start_screen(colortext='black'):
         clock.tick(FPS)
 
 
-def load_level(filename):
-    filename = "data/" + filename
-    with open(filename, 'r') as mapFile:
-        level_map = [line.strip() for line in mapFile]
-    max_width = max(map(len, level_map))
-    return list(map(lambda x: x.ljust(max_width, '.'), level_map))
-
-
-levels = [load_level('Start.txt'), load_level('level_1.txt'), load_level('level_2.txt'), load_level('level_3.txt'),
-          load_level('level_4.txt'), load_level('level_5.txt'), load_level('level_6.txt')]
-
-
-class Tile(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(all_sprites)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['wall']
-        self.rect = self.image.get_rect().move(pos_x, pos_y)
-        # Создание линий, ограничивающих картинки
-        self.imagewall = pygame.Surface([1, tile_height - 2])
-        self.imageroof = pygame.Surface([tile_width - 2, 1])
-        self.imagefloor = pygame.Surface([tile_width - 2, 1])
-        # Левая стенка
-        self.spritewallleft = pygame.sprite.Sprite()
-        self.spritewallleft.rect = self.imagewall.get_rect().move(pos_x, pos_y + 1)
-        self.spritewallleft.image = self.imagewall
-        tiles_wall_group.add(self.spritewallleft)
-        # Правая стенка
-        self.spritewallright = pygame.sprite.Sprite()
-        self.spritewallright.rect = self.imagewall.get_rect().move(pos_x + tile_width - 1, pos_y + 1)
-        self.spritewallright.image = self.imagewall
-        tiles_wall_group.add(self.spritewallright)
-        # Потолок
-        self.spriteroof = pygame.sprite.Sprite()
-        self.spriteroof.rect = self.imageroof.get_rect().move(pos_x + 1, pos_y + tile_height)
-        self.spriteroof.image = self.imageroof
-        tiles_roof_group.add(self.spriteroof)
-        # Пол
-        self.spritefloor = pygame.sprite.Sprite()
-        self.spritefloor.rect = self.imagefloor.get_rect().move(pos_x + 1, pos_y)
-        self.spritefloor.image = self.imagefloor
-        tiles_floor_group.add(self.spritefloor)
-
-
-class Door(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(door_group, tiles_wall_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['door']
-        self.rect = self.image.get_rect().move(pos_x, pos_y - tile_height)
-
-
-class Button(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(buttons_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['button']
-        self.rect = self.image.get_rect().move(pos_x, pos_y - 4)
-
-
-class Pressedbutton(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(pressed_buttons_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['pressedbutton']
-        self.rect = self.image.get_rect().move(pos_x, pos_y - 3)
-
-
-class Opendoor(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(opendoor_group, tiles_wall_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['opendoor']
-        self.rect = self.image.get_rect().move(pos_x, pos_y - tile_height)
-
-
-class Player(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, image):
-        super().__init__(player_group)
-        self.image = image
-        self.rect = self.image.get_rect().move(pos_x + 20, pos_y + 10)
-        player = None
-
-
-class Object(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(object_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['empty']
-        self.rect = self.image.get_rect().move(pos_x, pos_y - tile_height)
-
-class Ladder(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        # добавление картинки
-        super().__init__(ladder_group)
-        imageladder = pygame.Surface([3, tile_height])
-        imageladder.fill((255, 0, 0))
-        self.sprite = pygame.sprite.Sprite()
-        self.image = imageladder
-        self.rect = self.image.get_rect().move(pos_x - 3, pos_y)
-
-
-class Letter_and_Number(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, letter_or_number):
-        super().__init__(letter_and_number_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = letter_and_number_images[letter_or_number]
-        self.rect = self.image.get_rect().move(pos_x + 5, pos_y + 5)
-
-
-class KAMEHHbIu(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(scala_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = KAMEHb['level5']
-        self.rect = self.image.get_rect().move(pos_x, pos_y + 5)
-
-
-class Restart(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(restart_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['restart']
-        self.rect = self.image.get_rect().move(pos_x + 10, pos_y + 10)
-
-
-class Pause(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y):
-        super().__init__(pause_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images['pause']
-        self.rect = self.image.get_rect().move(pos_x + 10, pos_y + 10)
-
-
-class Level_number(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, image):
-        super().__init__(level_number_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = level_number_images[image]
-        self.rect = self.image.get_rect().move(pos_x + 5, pos_y + 5)
-
-
-class Arrow(pygame.sprite.Sprite):
-    def __init__(self, pos_x, pos_y, image):
-        super().__init__(arrow_group)
-        self.sprite = pygame.sprite.Sprite()
-        self.image = tile_images[image]
-        self.rect = self.image.get_rect().move(pos_x + 5, pos_y + 5)
-
-
 def generate_level(level):
     global letter_dict
     new_player, x, y = None, None, None
@@ -316,37 +94,34 @@ def generate_level(level):
                 pass
                 # Tile('empty', x * tile_width, y * tile_height)
             elif level[y][x] == '#':
-                Tile(x * tile_width, y * tile_height)
+                Tile(x * tile_width, y * tile_height, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
             elif level[y][x] == '@':
-                # Tile('empty', x * tile_width, y * tile_height)
-                new_player = Player(x * tile_width - 5, (y - 1) * tile_height, player_image)
+                new_player = Player(x * tile_width - 5, (y - 1) * tile_height, player_image, player_group)
                 x1 = x
                 y1 = y - 1
             elif level[y][x] == '|':
-                Door(x * tile_width, y * tile_height)
+                Door(x * tile_width, y * tile_height, door_group, tiles_wall_group)
                 x2 = x * tile_width
                 y2 = y * tile_height
             elif level[y][x] == '%':
-                Tile(x * tile_width, y * tile_height)
-                Ladder(x * tile_width, y * tile_height)
+                Tile(x * tile_width, y * tile_height, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
+                Ladder(x * tile_width, y * tile_height, ladder_group)
             elif level[y][x] == '*':
-                Object(x * tile_width, y * tile_height)
-                Tile(x * tile_width, y * tile_height)
+                Object(x * tile_width, y * tile_height, object_group)
+                Tile(x * tile_width, y * tile_height, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
             elif level[y][x] == '(':
-                Tile(x * tile_width, y * tile_height)
-                Button(x * tile_width, y * tile_height)
+                Tile(x * tile_width, y * tile_height, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
+                Button(x * tile_width, y * tile_height, buttons_group)
             elif level[y][x] == '/':
-                Letter_and_Number(x * tile_width, y * tile_height, 'а')
+                Letter_and_Number(x * tile_width, y * tile_height, 'а', letter_and_number_group)
                 letter_dict['а' + str(letternum)] = letter_and_number_group.sprites()[-1]
                 letternum += 1
             elif level[y][x] == '>':
-                KAMEHHbIu(x * tile_width, y * tile_height)
+                KAMEHHbIu(x * tile_width, y * tile_height, scala_group)
             elif level[y][x] == '[':
-                Restart(x * tile_width, y * tile_height)
+                Restart(x * tile_width, y * tile_height, restart_group)
             elif level[y][x] == '=':
-                Pause(x * tile_width, y * tile_height)
-    letternum = 1
-    # print(letter_dict)
+                Pause(x * tile_width, y * tile_height, pause_group)
     return new_player, x1, y1, x2, y2
 
 
@@ -382,9 +157,9 @@ def menu():
     intro_rect.x = (width - 255) // 2
     for i in range(10):
         if i < maxlevel:
-            Level_number((width - 500) // 2 + 50 * i, (height - 70) // 2 + 50, i + 1)
+            Level_number((width - 500) // 2 + 50 * i, (height - 70) // 2 + 50, i + 1, level_number_group)
         else:
-            Level_number((width - 500) // 2 + 50 * i, (height - 70) // 2 + 50, 'vopros')
+            Level_number((width - 500) // 2 + 50 * i, (height - 70) // 2 + 50, 'vopros', level_number_group)
     screen.blit(string_rendered, intro_rect)
     level_number_group.draw(screen)
     pygame.display.flip()
@@ -396,7 +171,6 @@ def menu():
                 for i in range(len(level_number_group)):
                     if level_number_group.sprites()[i].rect.collidepoint(event.pos):
                         levelnum = i + 1
-                        level_number_group = pygame.sprite.Group()
                         all_sprites = pygame.sprite.Group()
                         tiles_wall_group = pygame.sprite.Group()
                         tiles_floor_group = pygame.sprite.Group()
@@ -411,7 +185,13 @@ def menu():
                         pause_group = pygame.sprite.Group()
                         letter_and_number_group = pygame.sprite.Group()
                         door_group = pygame.sprite.Group()
-                        play(levels[levelnum], levelnum)
+                        if levelnum > 5:
+                            levelnum = 5
+                        else:
+                            if levelnum > maxlevel:
+                                maxlevel = levelnum
+                            level_number_group = pygame.sprite.Group()
+                            play(levels[levelnum], levelnum)
 
 
 def pause(size1):
@@ -549,7 +329,7 @@ def play(level, levelnumber):
                         flagjump = 0
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if levelnum == 3:
-                        Tile(event.pos[0], event.pos[1])
+                        Tile(event.pos[0], event.pos[1], all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
                     elif levelnum == 5 and not levelcomplete:
                         used = []
                         for i in range(5):
@@ -560,11 +340,11 @@ def play(level, levelnumber):
                                 if indx not in used:
                                     letter_and_number_group.remove(letter_dict[indx])
                                     if indx[0] == 'я':
-                                        letter_dict[indx] = Letter_and_Number(250 + (int(indx[1]) - 1) * tile_width, 350, 'а')
+                                        letter_dict[indx] = Letter_and_Number(250 + (int(indx[1]) - 1) * tile_width, 350, 'а', letter_and_number_group)
                                         letter_dict[lanim[0] + num] = letter_dict.pop(indx)
                                     else:
                                         letter_dict[indx] = Letter_and_Number(250 + (int(indx[1]) - 1) * tile_width, 350,
-                                                                           lanim[lanim.index(indx[0]) + 1])
+                                                                           lanim[lanim.index(indx[0]) + 1], letter_and_number_group)
                                         letter_dict[lanim[lanim.index(indx[0]) + 1] + num] = letter_dict.pop(indx)
                                 used.append(lanim[lanim.index(indx[0]) + 1] + num)
                                 if 'с1' in list(letter_dict) and 'к2' in list(letter_dict) and 'а3' in list(letter_dict) and\
@@ -573,8 +353,8 @@ def play(level, levelnumber):
                                     lanim = []
                                     letter_dict = {}
                                     letter_and_number_group = pygame.sprite.Group()
-                                    Tile(250, 350)
-                                    Tile(450, 350)
+                                    Tile(250, 350, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
+                                    Tile(450, 350, all_sprites, tiles_wall_group, tiles_floor_group, tiles_roof_group)
                                     break
                     if restart_group.sprites()[-1].rect.collidepoint(event.pos):
                         all_sprites = pygame.sprite.Group()
@@ -599,41 +379,41 @@ def play(level, levelnumber):
                 jump = True
             if go:
                 player_group.remove(player_group.sprites()[-1])
-                new_player = Player(x, y, player_image)
+                new_player = Player(x, y, player_image, player_group)
                 if not pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_wall_group):
                     x += speed * 3
                 if pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_wall_group):
                     y -= 0.2
                     x -= speed * 3
                     player_group.remove(player_group.sprites()[-1])
-                    new_player = Player(x, y, player_image)
+                    new_player = Player(x, y, player_image, player_group)
                     if not pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_floor_group):
                         y += 0.2
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image)
+                        new_player = Player(x, y, player_image, player_group)
                         speed = 0
                         go = False
                     else:
                         x += speed * 3
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image)
+                        new_player = Player(x, y, player_image, player_group)
                 if jump == False:
                     y += 1
                     player_group.remove(player_group.sprites()[-1])
-                    new_player = Player(x, y, player_image)
+                    new_player = Player(x, y, player_image, player_group)
                     if not pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_floor_group):
                         coeffyup = 7
                         jump = True
                     y -= 1
                     player_group.remove(player_group.sprites()[-1])
-                    new_player = Player(x, y, player_image)
+                    new_player = Player(x, y, player_image, player_group)
                 lastspeed = speed
             if jump:
                 if not pygame.sprite.spritecollideany(player_group.sprites()[-1], ladder_group):
                     y -= 7 - coeffyup
                     coeffyup += 0.2
                     player_group.remove(player_group.sprites()[-1])
-                    new_player = Player(x, y, player_image_jump)
+                    new_player = Player(x, y, player_image_jump, player_group)
                     if pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_roof_group):
                         if not pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_wall_group):
                             y += 7 - coeffyup + 0.2
@@ -641,22 +421,22 @@ def play(level, levelnumber):
                         else:
                             x -= speed * 3
                             player_group.remove(player_group.sprites()[-1])
-                            new_player = Player(x, y, player_image_jump)
+                            new_player = Player(x, y, player_image_jump, player_group)
                             if pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_wall_group):
                                 y += 7 - coeffyup + 0.2
                                 coeffyup = 7
                             x += speed * 3
                             player_group.remove(player_group.sprites()[-1])
-                            new_player = Player(x, y, player_image_jump)
+                            new_player = Player(x, y, player_image_jump, player_group)
                     elif pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_floor_group):
                         while pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_floor_group):
                             y -= 0.2
                             player_group.remove(player_group.sprites()[-1])
-                            new_player = Player(x, y, player_image)
+                            new_player = Player(x, y, player_image, player_group)
                         coeffyup = 0.2
                         y += 1.2
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image)
+                        new_player = Player(x, y, player_image, player_group)
                         if pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_wall_group) or y % 50 + 36 < 50:
                             jump = False
                         if not pygame.sprite.spritecollideany(player_group.sprites()[-1], tiles_floor_group) and y % 50 + 36 < 50:
@@ -664,10 +444,10 @@ def play(level, levelnumber):
                             coeffyup = 0.2
                         y -= 1.2
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image)
+                        new_player = Player(x, y, player_image, player_group)
             if levelnum == 4 and pygame.sprite.spritecollideany(player_group.sprites()[-1], buttons_group):
                 Pressedbutton(pygame.sprite.spritecollideany(player_group.sprites()[-1], buttons_group).rect[0],
-                              pygame.sprite.spritecollideany(player_group.sprites()[-1], buttons_group).rect[1])
+                              pygame.sprite.spritecollideany(player_group.sprites()[-1], buttons_group).rect[1], pressed_buttons_group)
                 buttons_group.remove(pygame.sprite.spritecollideany(player_group.sprites()[-1], buttons_group))
                 if len(pressed_buttons_group) == 4:
                     levelcomplete = True
@@ -676,12 +456,12 @@ def play(level, levelnumber):
                 if flagjump == 1:
                     y -= 2
                     player_group.remove(player_group.sprites()[-1])
-                    new_player = Player(x, y, player_image)
+                    new_player = Player(x, y, player_image, player_group)
             if y >= 500:
                 x = 55
                 y = 350
                 player_group.remove(player_group.sprites()[-1])
-                new_player = Player(x, y, player_image)
+                new_player = Player(x, y, player_image, player_group)
                 speed = 0
                 flagjump = 0
                 coeffyup = 0.2
@@ -703,15 +483,16 @@ def play(level, levelnumber):
                 letter_and_number_group = pygame.sprite.Group()
                 if levelnum < 5:
                     levelnum += 1
-                    maxlevel = levelnum
-                    file = open("data/openedlevels.txt", 'w')
-                    file.write(str(maxlevel))
-                    file.close()
+                    if maxlevel < levelnum:
+                        maxlevel = levelnum
+                        file = open("data/openedlevels.txt", 'w')
+                        file.write(str(maxlevel))
+                        file.close()
                     play(levels[levelnum], levelnum)
                 else:
                     menu()
             if levelcomplete and len(opendoor_group) == 0:
-                Opendoor(xdoor, ydoor)
+                Opendoor(xdoor, ydoor, opendoor_group)
                 door_group.sprites()[-1].kill()
                 opendoor_group.draw(screen)
             # Анимация
@@ -737,22 +518,22 @@ def play(level, levelnumber):
                 elif lastspeed == -1:
                     player_image = player_image_back
                 player_group.remove(player_group.sprites()[-1])
-                new_player = Player(x, y, player_image)
+                new_player = Player(x, y, player_image, player_group)
             if jump:
                 if go:
                     if speed == 1:
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image_jump)
+                        new_player = Player(x, y, player_image_jump, player_group)
                     elif speed == -1:
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image_jump_back)
+                        new_player = Player(x, y, player_image_jump_back, player_group)
                 else:
                     if lastspeed == 1 or lastspeed == 0:
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image_jump)
+                        new_player = Player(x, y, player_image_jump, player_group)
                     elif lastspeed == -1:
                         player_group.remove(player_group.sprites()[-1])
-                        new_player = Player(x, y, player_image_jump_back)
+                        new_player = Player(x, y, player_image_jump_back, player_group)
             clock.tick(FPS)
             screen.fill((255, 255, 255))
             if levelnumber == 3:
