@@ -22,8 +22,8 @@ level_number_group = pygame.sprite.Group()
 letter_dict = {}
 maxlevel = int(open("data/openedlevels.txt", encoding="utf-8").readline())
 levelnum = 0
-levels = [load_level('Start.txt'), load_level('level_1.txt'), load_level('level_2.txt'), load_level('level_3.txt'),
-          load_level('level_4.txt'), load_level('level_5.txt'), load_level('level_6.txt')]
+levels = [None, load_level('level_1.txt'), load_level('level_2.txt'), load_level('level_3.txt'),
+          load_level('level_4.txt'), load_level('level_5.txt')]
 
 
 def terminate():
