@@ -37,16 +37,22 @@ def start_screen(colortext='black'):
     size = width, height = 700, 500
     screen = pygame.display.set_mode(size)
     clock = pygame.time.Clock()
-    intro_text = ["Старт"]
+    intro_text = ['Well played)', "Старт"]
     fon = pygame.transform.scale(load_image('fon.png', 'black'), (width, height))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 100)
+    text_coord = 100
+    for line in intro_text:
+        string_rendered = font.render(line, 1, pygame.Color('black'))
+        intro_rect = string_rendered.get_rect()
+        intro_rect.top = text_coord
+        if line == 'Well played)':
+            intro_rect.x = 147
+        else:
+            intro_rect.x = 254
+        text_coord += 115
+        screen.blit(string_rendered, intro_rect)
     text_coord = 215
-    string_rendered = font.render(intro_text[0], True, pygame.Color('black'))
-    intro_rect = string_rendered.get_rect()
-    intro_rect.top = text_coord
-    intro_rect.x = 254
-    screen.blit(string_rendered, intro_rect)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -65,14 +71,14 @@ def start_screen(colortext='black'):
                 else:
                     highlighting = False
         if highlighting:
-            string_rendered = font.render(intro_text[0], True, pygame.Color('gray'))
+            string_rendered = font.render(intro_text[1], True, pygame.Color('gray'))
             intro_rect = string_rendered.get_rect()
             intro_rect.top = text_coord
             intro_rect.x = 254
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
         else:
-            string_rendered = font.render(intro_text[0], True, pygame.Color('black'))
+            string_rendered = font.render(intro_text[1], True, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
             intro_rect.top = text_coord
             intro_rect.x = 254
@@ -187,9 +193,7 @@ def menu():
                         door_group = pygame.sprite.Group()
                         if levelnum > 5:
                             levelnum = 5
-                        else:
-                            if levelnum > maxlevel:
-                                maxlevel = levelnum
+                        elif levelnum <= maxlevel:
                             level_number_group = pygame.sprite.Group()
                             play(levels[levelnum], levelnum)
 
@@ -460,6 +464,8 @@ def play(level, levelnumber):
             if y >= 500:
                 x = 55
                 y = 350
+                if levelnum == 2:
+                    y = 450
                 player_group.remove(player_group.sprites()[-1])
                 new_player = Player(x, y, player_image, player_group)
                 speed = 0
